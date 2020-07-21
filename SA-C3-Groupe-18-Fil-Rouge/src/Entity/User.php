@@ -4,9 +4,22 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 
 /**
+ * @ApiResource(
+ *     attributes={"security"="is_granted('ROLE_admin')"},
+ *     collectionOperations={
+ *         "get",
+ *         "post"={"security"="is_granted('ROLE_admin')"}
+ *     },
+ *     itemOperations={
+ *         "get",
+ *         "put"={"security"="is_granted('ROLE_admin') or object.owner == user"},
+ *     })
  * @ORM\Entity(repositoryClass=UserRepository::class)
  */
 class User implements UserInterface
@@ -20,27 +33,50 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank(
+     *     message="Champ email vide"
+     * )
+     * @Assert\Email(
+     *     message = "email invalid."
+     * )
      */
     private $email;
 
-    /**
-     * @ORM\Column(type="json")
-     */
+
     private $roles = [];
 
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Assert\NotBlank(
+     *     message="Champ Password vide"
+     * )
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(
+     *     message="Champ prenom vide"
+     * )
+     * @Assert\Regex(
+     *     pattern="/\d/",
+     *     match=false,
+     *     message="Le prenom est invalid"
+     * )
      */
     private $prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(
+     *     message="Champ Nom vide"
+     * )
+     * @Assert\Regex(
+     *     pattern="/\d/",
+     *     match=false,
+     *     message="Le nom est invalid"
+     * )
      */
     private $nom;
 
@@ -51,6 +87,10 @@ class User implements UserInterface
 
     /**
      * @ORM\ManyToOne(targetEntity=Profil::class, inversedBy="users")
+     * @Assert\NotBlank(
+     *     message="Champ profil vide"
+     * )
+     * @ApiSubresource
      */
     private $profil;
 

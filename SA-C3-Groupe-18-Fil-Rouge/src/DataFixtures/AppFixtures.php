@@ -55,8 +55,7 @@ class AppFixtures extends Fixture
             $profils->setLibell($tab[$i]);
 
             $user = new User();
-            $role = [$tabRoles[$i]];
-            $user->setRoles($role);
+
             $user->setPrenom($tabUser[$i]['prenom']);
             $user->setNom($tabUser[$i]['nom']);
             $user->setEmail($tabUser[$i]['email']);
