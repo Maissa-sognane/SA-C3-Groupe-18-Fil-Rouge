@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
@@ -38,6 +39,7 @@ class Profil
      * @Assert\NotBlank(
      *     message="Champ libelle vide"
      * )
+     * @Groups({"profil:read_all"})
      */
     private $libell;
 

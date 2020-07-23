@@ -52,6 +52,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
     }
     */
+    public function findByProfil($value)
+    {
+        return $this->createQueryBuilder('u')
+            ->innerJoin('u.profil', 'p')
+            ->andWhere('p.libell = :val')
+            ->setParameter('val', $value)
+            ->orderBy('u.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
 
     /*
     public function findOneBySomeField($value): ?User

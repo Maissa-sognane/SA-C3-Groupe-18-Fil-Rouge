@@ -8,19 +8,40 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
+ * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
- *     attributes={"security"="is_granted('ROLE_admin')"},
+ *     normalizationContext={"groups"={"profil:read","profil:read_all"}},
+ *     attributes={"security"="is_granted('ROLE_admin')",
+ *                  "security_message"="Vous n'avez pas access à cette Ressource"},
  *     collectionOperations={
- *         "get",
- *         "post"={"security"="is_granted('ROLE_admin')"}
+ *     "get",
+ *     "post",
+ *     "get_simple"={
+ *       "method"="GET",
+ *       "path"="/admin/profils",
+ *       "security"="is_granted('ROLE_admin')"
+ *     },
+ *     "post_simple"={
+ *       "method"="POST",
+ *       "path"="/admin/profils",
+ *       "security"="is_granted('ROLE_admin')"
+ *     },
+ *     "get_apprenants"={
+ *          "method"="GET",
+ *          "path"="/apprenants" ,
+ *          "normalization_context"={"groups":"apprenant:read"},
+ *          "access_control"="(is_granted('ROLE_admin') or is_granted('ROLE_formateur'))",
+ *          "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          "route_name"="apprenant_liste",
+ *     },
  *     },
  *     itemOperations={
  *         "get",
- *         "put"={"security"="is_granted('ROLE_admin') or object.owner == user"},
+ *         "put"={"security"="is_granted('ROLE_admin')"},
  *     })
- * @ORM\Entity(repositoryClass=UserRepository::class)
  */
 class User implements UserInterface
 {
@@ -28,6 +49,8 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"profil:read_all"})
+     * @Groups({"apprenant:read"})
      */
     private $id;
 
@@ -39,6 +62,8 @@ class User implements UserInterface
      * @Assert\Email(
      *     message = "email invalid."
      * )
+     * @Groups({"profil:read_all"})
+     * @Groups({"apprenant:read"})
      */
     private $email;
 
@@ -64,6 +89,8 @@ class User implements UserInterface
      *     match=false,
      *     message="Le prenom est invalid"
      * )
+     * @Groups({"profil:read_all"})
+     * @Groups({"apprenant:read"})
      */
     private $prenom;
 
@@ -77,11 +104,14 @@ class User implements UserInterface
      *     match=false,
      *     message="Le nom est invalid"
      * )
+     * @Groups({"profil:read_all"})
+     * @Groups({"apprenant:read"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"profil:read_all"})
      */
     private $avatar;
 
@@ -91,8 +121,15 @@ class User implements UserInterface
      *     message="Champ profil vide"
      * )
      * @ApiSubresource
+     * @Groups({"profil:read_all"})
      */
     private $profil;
+
+    /**
+     * @ORM\Column(type="blob", nullable=true)
+     *
+     */
+    private $photo_avatar;
 
     public function getId(): ?int
     {
@@ -216,6 +253,19 @@ class User implements UserInterface
     public function setProfil(?Profil $profil): self
     {
         $this->profil = $profil;
+
+        return $this;
+    }
+
+    public function getPhotoAvatar()
+    {
+       //return \base64_encode(stream_get_contents($this->photo_avatar));
+        return $this->photo_avatar;
+    }
+
+    public function setPhotoAvatar($photo_avatar): self
+    {
+        $this->photo_avatar = $photo_avatar;
 
         return $this;
     }
