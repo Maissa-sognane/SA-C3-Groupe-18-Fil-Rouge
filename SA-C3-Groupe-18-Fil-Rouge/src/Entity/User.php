@@ -14,15 +14,21 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
  *     normalizationContext={"groups"={"profil:read","profil:read_all"}},
- *     attributes={"security"="is_granted('ROLE_admin')",
- *                  "security_message"="Vous n'avez pas access à cette Ressource"},
  *     collectionOperations={
  *     "get",
- *     "post",
+ *     "post_users"={
+ *          "method"="POST",
+ *          "path"="/users",
+ *          "access_control"="(is_granted('ROLE_formateur'))",
+ *          "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          "route_name"="addUser",
+ *
+ *     },
  *     "get_simple"={
  *       "method"="GET",
  *       "path"="/admin/profils",
- *       "security"="is_granted('ROLE_admin')"
+ *       "security"="is_granted('ROLE_admin')",
+ *
  *     },
  *     "post_simple"={
  *       "method"="POST",
@@ -33,10 +39,36 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *          "method"="GET",
  *          "path"="/apprenants" ,
  *          "normalization_context"={"groups":"apprenant:read"},
- *          "access_control"="(is_granted('ROLE_admin') or is_granted('ROLE_formateur'))",
+ *          "access_control"="(is_granted('ROLE_formateur'))",
  *          "access_control_message"="Vous n'avez pas access à cette Ressource",
  *          "route_name"="apprenant_liste",
  *     },
+ *     "get_apprenants_by_Id"={
+ *          "method"="GET",
+ *          "path"="/apprenants/{id}",
+ *          "normalization_context"={"groups":"apprenant:read"},
+ *          "access_control"="(is_granted('ROLE_formateur'))",
+ *          "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          "route_name"="apprenant",
+ *     },
+ *     "get_formateurs"={
+ *          "method"="GET",
+ *          "path"="/formateurs" ,
+ *          "normalization_context"={"groups":"apprenant:read"},
+ *          "access_control"="(is_granted('ROLE_admin'))",
+ *          "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          "route_name"="formateur_liste",
+ *     },
+ *
+ *    "get_formateurs_by_Id"={
+ *          "method"="GET",
+ *          "path"="/formateurs/{id}",
+ *          "normalization_context"={"groups":"apprenant:read"},
+ *          "access_control"="(is_granted('ROLE_admin'))",
+ *          "access_control_message"="Vous n'avez pas access à cette Ressource",
+ *          "route_name"="formateur_liste",
+ *     },
+ *
  *     },
  *     itemOperations={
  *         "get",
@@ -109,11 +141,7 @@ class User implements UserInterface
      */
     private $nom;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"profil:read_all"})
-     */
-    private $avatar;
+
 
     /**
      * @ORM\ManyToOne(targetEntity=Profil::class, inversedBy="users")
@@ -129,7 +157,12 @@ class User implements UserInterface
      * @ORM\Column(type="blob", nullable=true)
      *
      */
-    private $photo_avatar;
+    private $avatar;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $statut;
 
     public function getId(): ?int
     {
@@ -233,18 +266,6 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getAvatar(): ?string
-    {
-        return $this->avatar;
-    }
-
-    public function setAvatar(?string $avatar): self
-    {
-        $this->avatar = $avatar;
-
-        return $this;
-    }
-
     public function getProfil(): ?Profil
     {
         return $this->profil;
@@ -257,15 +278,26 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getPhotoAvatar()
+    public function getAvatar()
     {
-       //return \base64_encode(stream_get_contents($this->photo_avatar));
-        return $this->photo_avatar;
+        return $this->avatar;
     }
 
-    public function setPhotoAvatar($photo_avatar): self
+    public function setAvatar($avatar): self
     {
-        $this->photo_avatar = $photo_avatar;
+        $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    public function getStatut(): ?bool
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(?bool $statut): self
+    {
+        $this->statut = $statut;
 
         return $this;
     }
