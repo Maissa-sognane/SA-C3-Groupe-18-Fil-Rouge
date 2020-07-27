@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -130,6 +132,22 @@ class User implements UserInterface
      *
      */
     private $photo_avatar;
+
+    /**
+     * @ORM\OneToMany(targetEntity=GroupeCompetence::class, mappedBy="groupeComp")
+     */
+    private $groupeCompetences;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Promotion::class, mappedBy="promotion")
+     */
+    private $promotions;
+
+    public function __construct()
+    {
+        $this->groupeCompetences = new ArrayCollection();
+        $this->promotions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -266,6 +284,68 @@ class User implements UserInterface
     public function setPhotoAvatar($photo_avatar): self
     {
         $this->photo_avatar = $photo_avatar;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|GroupeCompetence[]
+     */
+    public function getGroupeCompetences(): Collection
+    {
+        return $this->groupeCompetences;
+    }
+
+    public function addGroupeCompetence(GroupeCompetence $groupeCompetence): self
+    {
+        if (!$this->groupeCompetences->contains($groupeCompetence)) {
+            $this->groupeCompetences[] = $groupeCompetence;
+            $groupeCompetence->setGroupeComp($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGroupeCompetence(GroupeCompetence $groupeCompetence): self
+    {
+        if ($this->groupeCompetences->contains($groupeCompetence)) {
+            $this->groupeCompetences->removeElement($groupeCompetence);
+            // set the owning side to null (unless already changed)
+            if ($groupeCompetence->getGroupeComp() === $this) {
+                $groupeCompetence->setGroupeComp(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Promotion[]
+     */
+    public function getPromotions(): Collection
+    {
+        return $this->promotions;
+    }
+
+    public function addPromotion(Promotion $promotion): self
+    {
+        if (!$this->promotions->contains($promotion)) {
+            $this->promotions[] = $promotion;
+            $promotion->setPromotion($this);
+        }
+
+        return $this;
+    }
+
+    public function removePromotion(Promotion $promotion): self
+    {
+        if ($this->promotions->contains($promotion)) {
+            $this->promotions->removeElement($promotion);
+            // set the owning side to null (unless already changed)
+            if ($promotion->getPromotion() === $this) {
+                $promotion->setPromotion(null);
+            }
+        }
 
         return $this;
     }
